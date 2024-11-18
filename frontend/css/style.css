@@ -13,8 +13,8 @@
 }
 
 body {
-    background: url("../background.png");
-    color: #5A4242;
+    background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQb34mKFgUHnMmW0DznkKRvKWaEr1fKRgIpJtvs_zj27B8hiTlZVcNf0-rk&s=10");
+    color: #00FF1E;
 }
 
 .container {
@@ -137,7 +137,7 @@ body {
 }
 
 .message--self {
-    background-color: #f2f2f2;
+    background-color: #ACECA0;
     color: #121212;
     border-radius: 10px 10px 0 10px;
     align-self: flex-end;
