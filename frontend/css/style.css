@@ -5,7 +5,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Orbitron", sans-serif;
+    font-family: "Inter", sans-serif;
 }
 
 :root {
@@ -155,5 +155,12 @@ body {
     margin-bottom: 15px;
     font-weight: 700;
     color: cadetblue;
+}
+.message-time {
+    font-size: 0.7em;
+    color: #555;
+    display: block;
+    float:right;
+    margin-top:2px; /* Espaçamento acima do horário */
 }
 
