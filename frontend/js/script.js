@@ -1,4 +1,4 @@
-// login elements
+  // login elements
   const login = document.querySelector(".login");
   const loginForm = login.querySelector(".login__form");
   const loginInput = login.querySelector(".login__input");
@@ -121,6 +121,7 @@
       messageElement.appendChild(senderSpan);
     }
   
+    // Verifica se o conteúdo é um blob de áudio
     if (content.startsWith('blob:')) {
       const audioElement = document.createElement("audio");
       audioElement.src = content;
@@ -178,14 +179,15 @@
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         const audioUrl = URL.createObjectURL(audioBlob);
-  
+      
+        // Crie uma URL que pode ser usada por outros usuários
         const message = {
           userId: user.id,
           userName: user.name,
           userColor: user.color,
           content: audioUrl // Envie a URL do áudio
         };
-  
+      
         websocket.send(JSON.stringify(message));
         console.log("Áudio enviado:", audioUrl);
       };
