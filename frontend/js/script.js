@@ -96,33 +96,48 @@ const scrollScreen = () => {
 }
 
 const processMessage = ({ data }) => {
-    const { userId, userName, userColor, content } = JSON.parse(data);
+  const { userId, userName, userColor, content } = JSON.parse(data);
 
-    const message = {
-        userId,
-        userName,
-        userColor,
-        content
-    };
+  const message = {
+    userId,
+    userName,
+    userColor,
+    content
+  };
 
-    storeMessage(message);
+  storeMessage(message);
 
-    const messageElement =
-        userId === user.id
-            ? createMessageSelfElement(content)
-            : createMessageOtherElement(content, userName, userColor);
+  const messageElement = document.createElement("div");
+  const timeSpan = document.createElement("span");
 
-    // Se o conteúdo for uma URL de áudio, adicione um elemento de áudio
-    if (content.endsWith('.wav')) {
-        const audioElement = document.createElement("audio");
-        audioElement.src = content;
-        audioElement.controls = true; // Adiciona controles ao player de áudio
-        messageElement.appendChild(audioElement);
-    }
+  if (userId === user.id) {
+    messageElement.classList.add("message--self");
+  } else {
+    messageElement.classList.add("message--other");
+    const senderSpan = document.createElement("span");
+    senderSpan.classList.add("message--sender");
+    senderSpan.style.color = userColor;
+    senderSpan.innerHTML = userName;
+    messageElement.appendChild(senderSpan);
+  }
 
-    chatMessages.appendChild(messageElement);
-    scrollScreen();
-}
+  if (content.startsWith('blob:')) {
+    const audioElement = document.createElement("audio");
+    audioElement.src = content;
+    audioElement.controls = true; // Adiciona controles ao player de áudio
+    messageElement.appendChild(audioElement);
+  } else {
+    messageElement.innerHTML += content; // Para mensagens de texto
+  }
+
+  const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  timeSpan.innerHTML = currentTime;
+  timeSpan.classList.add("message-time");
+  messageElement.appendChild(timeSpan);
+
+  chatMessages.appendChild(messageElement);
+  scrollScreen();
+};
 
 const handleAudioRecording = () => {
     const recordButton = document.getElementById("recordButton");
