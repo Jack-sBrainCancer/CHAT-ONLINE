@@ -130,14 +130,15 @@ const handleAudioRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         mediaRecorder = new MediaRecorder(stream);
         
-        recordButton.onclick = () => {
-            if (mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-                recordButton.textContent = "Gravar Áudio";
-            } else {
-                mediaRecorder.start();
-                recordButton.textContent = "Parar Gravação";
-            }
+        recordButton.onmousedown = () => {
+            audioChunks = []; // Limpa os chunks de áudio
+            mediaRecorder.start();
+            recordButton.innerHTML = '<span class="material-symbols-outlined">stop</span>'; // Muda o ícone para "parar"
+        };
+
+        recordButton.onmouseup = () => {
+            mediaRecorder.stop();
+            recordButton.innerHTML = '<span class="material-symbols-outlined">mic</span>'; // Muda o ícone de volta para "microfone"
         };
 
         mediaRecorder.ondataavailable = event => {
@@ -147,7 +148,6 @@ const handleAudioRecording = () => {
         mediaRecorder.onstop = () => {
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             const audioUrl = URL.createObjectURL(audioBlob);
-            audioChunks = [];
 
             const message = {
                 userId: user.id,
@@ -158,6 +158,8 @@ const handleAudioRecording = () => {
 
             websocket.send(JSON.stringify(message));
         };
+    }).catch(err => {
+        console.error("Erro ao acessar o microfone:", err);
     });
 };
 
