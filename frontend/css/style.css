@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
 
 * {
@@ -125,13 +126,6 @@ body {
     font-size: 1.8rem;
 }
 
-.chat__audio-button {
-    border: none;
-    background: none;
-    color: #f2f2f2;
-    cursor: pointer;
-}
-
 .chat__messages > div {
     padding: 10px;
     width: 100%;
@@ -166,6 +160,18 @@ body {
     font-size: 0.7em;
     color: #555;
     display: block;
-    float: right;
-    margin-top: 2px; /* Espaçamento acima do horário */
+    float:right;
+    margin-top:2px; /* Espaçamento acima do horário */
+}
+
+.chat__users {
+  background-color: #121212;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.users-list {
+  color: #f2f2f2;
+  font-size: 0.9rem;
 }
