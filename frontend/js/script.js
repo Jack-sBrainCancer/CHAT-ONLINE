@@ -123,28 +123,16 @@ const processMessage = ({ data }) => {
     if (event === "user_connected") {
         onlineUsers.add(userName);
         updateOnlineUsers();
+        // Adiciona mensagem de conexão ao chat
+        const messageElement = createMessageOtherElement(`${userName} se conectou.`, "Sistema", "#00FF1E");
+        chatMessages.appendChild(messageElement);
+        scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
     } else if (event === "user_disconnected") {
         onlineUsers.delete(userName);
         updateOnlineUsers();
-    } else if (event === "audio_message") {
-        // Criação de um elemento de áudio
-        const audioElement = document.createElement('audio');
-        audioElement.controls = true; // Mantém os controles padrão
-        audioElement.src = `data:audio/wav;base64,${content}`; // Define a fonte do áudio
-
-        // Cria uma mensagem para adicionar ao chat
-        const messageElement = createMessageOtherElement(audioElement.outerHTML, userName, userColor);
+        // Adiciona mensagem de desconexão ao chat
+        const messageElement = createMessageOtherElement(`${userName} se desconectou.`, "Sistema", "#FF0000");
         chatMessages.appendChild(messageElement);
-
-        // Armazenar a mensagem no localStorage
-        storeMessage({
-            userId,
-            userName,
-            userColor,
-            content: content,
-            event: "audio_message"
-        });
-
         scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
     } else {
         const message = {
