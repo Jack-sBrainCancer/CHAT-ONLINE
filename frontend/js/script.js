@@ -107,62 +107,41 @@ const updateOnlineUsers = () => {
 }
 
 const processMessage = ({ data }) => {
-  const { userId, userName, userColor, content, event } = JSON.parse(data);
+    const { userId, userName, userColor, content, event } = JSON.parse(data);
 
-  if (event === "user_connected") {
-    onlineUsers.add(userName);
-    updateOnlineUsers();
-  } else if (event === "user_disconnected") {
-    onlineUsers.delete(userName);
-    updateOnlineUsers();
-  } else if (event === "audio_message") {
-    // Criação de um elemento de áudio estilizado
-    const audioElement = document.createElement('audio');
-    audioElement.controls = false; // Não mostra controles padrão
-    audioElement.src = `data:audio/wav;base64,${content}`; // Define a fonte do áudio
+    if (event === "user_connected") {
+        onlineUsers.add(userName);
+        updateOnlineUsers();
+    } else if (event === "user_disconnected") {
+        onlineUsers.delete(userName);
+        updateOnlineUsers();
+    } else if (event === "audio_message") {
+        const audioElement = document.createElement('audio');
+        audioElement.controls = true;
+        audioElement.src = `data:audio/wav;base64,${content}`; // Define a fonte do áudio
 
-    // Criação do player de áudio personalizado
-    const audioPlayer = document.createElement('div');
-    audioPlayer.className = 'audio-player';
+        const messageElement = createMessageOtherElement(audioElement.outerHTML, userName, userColor);
+        chatMessages.appendChild(messageElement);
+        scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
+    } else {
+        const message = {
+            userId,
+            userName,
+            userColor,
+            content
+        };
 
-    // Botões de controle
-    const playButton = document.createElement('button');
-    playButton.className = 'play-button';
-    playButton.innerHTML = '▶'; // Símbolo de play
-    playButton.onclick = () => audioElement.play(); // Ação de play
+        // Armazenar a mensagem no localStorage
+        storeMessage(message);
 
-    const pauseButton = document.createElement('button');
-    pauseButton.className = 'pause-button';
-    pauseButton.innerHTML = '❚❚'; // Símbolo de pause
-    pauseButton.onclick = () => audioElement.pause(); // Ação de pause
+        const messageElement =
+            userId === user.id
+                ? createMessageSelfElement(content)
+                : createMessageOtherElement(content, userName, userColor);
 
-    // Adiciona os controles ao player de áudio
-    audioPlayer.appendChild(playButton);
-    audioPlayer.appendChild(pauseButton);
-    audioPlayer.appendChild(audioElement);
-
-    const messageElement = createMessageOtherElement(audioPlayer.outerHTML, userName, userColor);
-    chatMessages.appendChild(messageElement);
-    scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
-  } else {
-    const message = {
-      userId,
-      userName,
-      userColor,
-      content
-    };
-
-    // Armazenar a mensagem no localStorage
-    storeMessage(message);
-
-    const messageElement =
-      userId === user.id ?
-      createMessageSelfElement(content) :
-      createMessageOtherElement(content, userName, userColor);
-
-    chatMessages.appendChild(messageElement);
-    scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
-  }
+        chatMessages.appendChild(messageElement);
+        scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
+    }
 }
 
 const handleLogin = (event) => {
