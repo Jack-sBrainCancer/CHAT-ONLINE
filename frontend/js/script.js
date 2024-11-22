@@ -8,6 +8,7 @@ const chat = document.querySelector(".chat");
 const chatForm = chat.querySelector(".chat__form");
 const chatInput = chat.querySelector(".chat__input");
 const chatMessages = chat.querySelector(".chat__messages");
+const usersList = chat.querySelector(".users-list");
 
 const colors = [
     "cadetblue",
@@ -21,6 +22,7 @@ const colors = [
 const user = { id: "", name: "", color: "" };
 
 let websocket;
+let onlineUsers = new Set();
 
 // Função para criar um elemento de mensagem do próprio usuário
 const createMessageSelfElement = (content) => {
@@ -95,8 +97,25 @@ const scrollScreen = () => {
     });
 }
 
+const updateOnlineUsers = () => {
+    usersList.innerHTML = ""; // Limpa a lista atual
+    onlineUsers.forEach(userName => {
+        const userDiv = document.createElement("div");
+        userDiv.textContent = userName;
+        usersList.appendChild(userDiv);
+    });
+}
+
 const processMessage = ({ data }) => {
-    const { userId, userName, userColor, content } = JSON.parse(data);
+    const { userId, userName, userColor, content, event } = JSON.parse(data);
+
+    if (event === "user_connected") {
+        onlineUsers.add(userName);
+        updateOnlineUsers();
+    } else if (event === "user_disconnected") {
+        onlineUsers.delete(userName);
+        updateOnlineUsers();
+    }
 
     const message = {
         userId,
@@ -132,6 +151,9 @@ const handleLogin = (event) => {
 
     websocket = new WebSocket("wss://chat-online-azd6.onrender.com//");
     websocket.onmessage = processMessage;
+
+    // Envia uma mensagem para informar que o usuário se conectou
+    websocket.send(JSON.stringify({ event: "user_connected", userName: user.name, userId: user.id }));
 }
 
 const sendMessage = (event) => {
