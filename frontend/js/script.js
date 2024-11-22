@@ -23,6 +23,8 @@ const user = { id: "", name: "", color: "" };
 
 let websocket;
 let onlineUsers = new Set();
+let mediaRecorder;
+let audioChunks = [];
 
 // Função para criar um elemento de mensagem do próprio usuário
 const createMessageSelfElement = (content) => {
@@ -105,33 +107,62 @@ const updateOnlineUsers = () => {
 }
 
 const processMessage = ({ data }) => {
-    const { userId, userName, userColor, content, event } = JSON.parse(data);
+  const { userId, userName, userColor, content, event } = JSON.parse(data);
 
-    if (event === "user_connected") {
-        onlineUsers.add(userName);
-        updateOnlineUsers();
-    } else if (event === "user_disconnected") {
-        onlineUsers.delete(userName);
-        updateOnlineUsers();
-    } else {
-        const message = {
-            userId,
-            userName,
-            userColor,
-            content
-        };
+  if (event === "user_connected") {
+    onlineUsers.add(userName);
+    updateOnlineUsers();
+  } else if (event === "user_disconnected") {
+    onlineUsers.delete(userName);
+    updateOnlineUsers();
+  } else if (event === "audio_message") {
+    // Criação de um elemento de áudio estilizado
+    const audioElement = document.createElement('audio');
+    audioElement.controls = false; // Não mostra controles padrão
+    audioElement.src = `data:audio/wav;base64,${content}`; // Define a fonte do áudio
 
-        // Armazenar a mensagem no localStorage
-        storeMessage(message);
+    // Criação do player de áudio personalizado
+    const audioPlayer = document.createElement('div');
+    audioPlayer.className = 'audio-player';
 
-        const messageElement =
-            userId === user.id
-                ? createMessageSelfElement(content)
-                : createMessageOtherElement(content, userName, userColor);
+    // Botões de controle
+    const playButton = document.createElement('button');
+    playButton.className = 'play-button';
+    playButton.innerHTML = '▶'; // Símbolo de play
+    playButton.onclick = () => audioElement.play(); // Ação de play
 
-        chatMessages.appendChild(messageElement);
-        scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
-    }
+    const pauseButton = document.createElement('button');
+    pauseButton.className = 'pause-button';
+    pauseButton.innerHTML = '❚❚'; // Símbolo de pause
+    pauseButton.onclick = () => audioElement.pause(); // Ação de pause
+
+    // Adiciona os controles ao player de áudio
+    audioPlayer.appendChild(playButton);
+    audioPlayer.appendChild(pauseButton);
+    audioPlayer.appendChild(audioElement);
+
+    const messageElement = createMessageOtherElement(audioPlayer.outerHTML, userName, userColor);
+    chatMessages.appendChild(messageElement);
+    scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
+  } else {
+    const message = {
+      userId,
+      userName,
+      userColor,
+      content
+    };
+
+    // Armazenar a mensagem no localStorage
+    storeMessage(message);
+
+    const messageElement =
+      userId === user.id ?
+      createMessageSelfElement(content) :
+      createMessageOtherElement(content, userName, userColor);
+
+    chatMessages.appendChild(messageElement);
+    scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
+  }
 }
 
 const handleLogin = (event) => {
@@ -167,6 +198,57 @@ const sendMessage = (event) => {
     websocket.send(JSON.stringify(message));
     chatInput.value = "";
 }
+
+// Função para iniciar a gravação
+const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.start();
+    mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioChunks = []; // Limpa os chunks para a próxima gravação
+        sendAudio(audioBlob); // Envia o áudio para o servidor
+    };
+};
+
+// Função para parar a gravação
+const stopRecording = () => {
+    mediaRecorder.stop();
+};
+
+// Função para enviar o áudio para todos os usuários
+const sendAudio = (audioBlob) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const audioData = reader.result.split(',')[1]; // Converte para base64
+        const audioMessage = {
+            userId: user.id,
+            userName: user.name,
+            userColor: user.color,
+            content: audioData, // O conteúdo do áudio em base64
+            event: "audio_message" // Tipo de evento
+        };
+        websocket.send(JSON.stringify(audioMessage));
+    };
+    reader.readAsDataURL(audioBlob); // Lê o blob como URL
+};
+
+// Adiciona eventos ao botão de gravação
+document.getElementById('recordButton').addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+        // O texto do botão foi substituído por um ícone, então não há necessidade de atualizar o texto
+    } else {
+        startRecording();
+        // O texto do botão foi substituído por um ícone, então não há necessidade de atualizar o texto
+    }
+});
 
 loginForm.addEventListener("submit", handleLogin);
 chatForm.addEventListener("submit", sendMessage);
