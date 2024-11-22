@@ -54,9 +54,9 @@ const createMessageOtherElement = (content, sender, senderColor) => {
     span.classList.add("message--sender");
     span.style.color = senderColor;
 
-    div.appendChild(span);
     span.innerHTML = sender;
-    div.innerHTML += content;
+    div.appendChild(span);
+    div.innerHTML += content; // Adiciona conteúdo HTML diretamente
 
     // Obter a hora atual e formatá-la
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -67,7 +67,7 @@ const createMessageOtherElement = (content, sender, senderColor) => {
     return div;
 }
 
-// Função para armazenar mensagens no localStorage
+// Função para armazenar mensagens (texto e áudio) no localStorage
 const storeMessage = (message) => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.push(message);
@@ -116,12 +116,24 @@ const processMessage = ({ data }) => {
         onlineUsers.delete(userName);
         updateOnlineUsers();
     } else if (event === "audio_message") {
+        // Criação de um elemento de áudio
         const audioElement = document.createElement('audio');
-        audioElement.controls = true;
+        audioElement.controls = true; // Mantém os controles padrão
         audioElement.src = `data:audio/wav;base64,${content}`; // Define a fonte do áudio
 
+        // Cria uma mensagem para adicionar ao chat
         const messageElement = createMessageOtherElement(audioElement.outerHTML, userName, userColor);
         chatMessages.appendChild(messageElement);
+
+        // Armazenar a mensagem no localStorage
+        storeMessage({
+            userId,
+            userName,
+            userColor,
+            content: audioElement.src,
+            event: "audio_message"
+        });
+
         scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
     } else {
         const message = {
@@ -190,9 +202,8 @@ const startRecording = async () => {
 
     mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        audioChunks = []; // Limpa os chunks para a próxima gravação
         sendAudio(audioBlob); // Envia o áudio para o servidor
+        audioChunks = []; // Limpa os chunks para a próxima gravação
     };
 };
 
@@ -222,10 +233,8 @@ const sendAudio = (audioBlob) => {
 document.getElementById('recordButton').addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         stopRecording();
-        // O texto do botão foi substituído por um ícone, então não há necessidade de atualizar o texto
     } else {
         startRecording();
-        // O texto do botão foi substituído por um ícone, então não há necessidade de atualizar o texto
     }
 });
 
