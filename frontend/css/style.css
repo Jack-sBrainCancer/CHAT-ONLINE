@@ -86,7 +86,7 @@ body {
     height: 100%;
     display: none;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start; /* Alterado para flex-start para manter a ordem correta */
 }
 
 .chat__messages {
@@ -94,10 +94,9 @@ body {
     padding: 30px 30px 90px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* Começar do topo */
+    justify-content: flex-end; /* Mantenha as mensagens no final */
     overflow-y: auto; /* Permitir rolagem dentro da área de mensagens */
-    max-height: calc(100vh - 100px); /* Limitar altura para permitir rolagem */
-    bottom:100px;
+    max-height: calc(100vh - 150px); /* Ajustar para acomodar a altura do formulário */
 }
 
 .chat__form {
