@@ -78,11 +78,22 @@ const storeMessage = (message) => {
 const loadMessages = () => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.forEach(msg => {
-        const messageElement =
-            msg.userId === user.id
-                ? createMessageSelfElement(msg.content)
-                : createMessageOtherElement(msg.content, msg.userName, msg.userColor);
-        chatMessages.appendChild(messageElement);
+        if (msg.event === "audio_message") {
+            // Se for uma mensagem de áudio, cria o player de áudio
+            const audioElement = document.createElement('audio');
+            audioElement.controls = true; // Mantém os controles padrão
+            audioElement.src = `data:audio/wav;base64,${msg.content}`; // Define a fonte do áudio
+
+            const messageElement = createMessageOtherElement(audioElement.outerHTML, msg.userName, msg.userColor);
+            chatMessages.appendChild(messageElement);
+        } else {
+            // Para mensagens de texto
+            const messageElement =
+                msg.userId === user.id
+                    ? createMessageSelfElement(msg.content)
+                    : createMessageOtherElement(msg.content, msg.userName, msg.userColor);
+            chatMessages.appendChild(messageElement);
+        }
     });
     scrollScreen();
 }
@@ -130,7 +141,7 @@ const processMessage = ({ data }) => {
             userId,
             userName,
             userColor,
-            content: audioElement.src,
+            content: content,
             event: "audio_message"
         });
 
