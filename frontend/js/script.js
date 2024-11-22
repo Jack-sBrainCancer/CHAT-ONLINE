@@ -19,116 +19,134 @@ const colors = [
 ];
 
 const user = { id: "", name: "", color: "" };
+
 let websocket;
 
-// Function to create a message element
-const createMessageElement = (content, sender = null, senderColor = null, isSelf = false) => {
+// Função para criar um elemento de mensagem do próprio usuário
+const createMessageSelfElement = (content) => {
     const div = document.createElement("div");
     const timeSpan = document.createElement("span");
 
-    div.classList.add(isSelf ? "message--self" : "message--other");
+    div.classList.add("message--self");
+    div.innerHTML = content;
 
-    if (!isSelf) {
-        const span = document.createElement("span");
-        span.classList.add("message--sender");
-        span.style.color = senderColor;
-        span.innerHTML = sender;
-        div.appendChild(span);
-    }
-
-    div.innerHTML += content;
-
-    // Get current time and format it
+    // Obter a hora atual e formatá-la
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     timeSpan.innerHTML = currentTime;
     timeSpan.classList.add("message-time");
-    
+
     div.appendChild(timeSpan);
     return div;
 }
 
-// Function to store messages in localStorage
+// Função para criar um elemento de mensagem de outro usuário
+const createMessageOtherElement = (content, sender, senderColor) => {
+    const div = document.createElement("div");
+    const span = document.createElement("span");
+    const timeSpan = document.createElement("span");
+
+    div.classList.add("message--other");
+
+    span.classList.add("message--sender");
+    span.style.color = senderColor;
+
+    div.appendChild(span);
+    span.innerHTML = sender;
+    div.innerHTML += content;
+
+    // Obter a hora atual e formatá-la
+    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    timeSpan.innerHTML = currentTime;
+    timeSpan.classList.add("message-time");
+
+    div.appendChild(timeSpan);
+    return div;
+}
+
+// Função para armazenar mensagens no localStorage
 const storeMessage = (message) => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.push(message);
     localStorage.setItem("chatMessages", JSON.stringify(messages));
 }
 
-// Function to load messages from localStorage
+// Função para carregar mensagens do localStorage
 const loadMessages = () => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.forEach(msg => {
-        const messageElement = createMessageElement(msg.content, msg.userName, msg.userColor, msg.userId === user.id);
+        const messageElement =
+            msg.userId === user.id
+                ? createMessageSelfElement(msg.content)
+                : createMessageOtherElement(msg.content, msg.userName, msg.userColor);
         chatMessages.appendChild(messageElement);
     });
     scrollScreen();
 }
 
-// Function to get a random color
-const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
-
-// Function to scroll the chat window
-const scrollScreen = () => {
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+const getRandomColor = () => {
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return colors[randomIndex];
 }
 
-// Function to handle incoming messages
+const scrollScreen = () => {
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
+}
+
 const processMessage = ({ data }) => {
     const { userId, userName, userColor, content } = JSON.parse(data);
-    const message = { userId, userName, userColor, content };
 
+    const message = {
+        userId,
+        userName,
+        userColor,
+        content
+    };
+
+    // Armazenar a mensagem no localStorage
     storeMessage(message);
-    const messageElement = createMessageElement(content, userName, userColor, userId === user.id);
+
+    const messageElement =
+        userId === user.id
+            ? createMessageSelfElement(content)
+            : createMessageOtherElement(content, userName, userColor);
+
     chatMessages.appendChild(messageElement);
     scrollScreen();
 }
 
-// Function to handle user login
 const handleLogin = (event) => {
     event.preventDefault();
-    const username = loginInput.value.trim();
-
-    if (!username) {
-        alert("Please enter a username.");
-        return;
-    }
 
     user.id = crypto.randomUUID();
-    user.name = username;
+    user.name = loginInput.value;
     user.color = getRandomColor();
 
     login.style.display = "none";
     chat.style.display = "flex";
 
+    // Carregar mensagens do localStorage
     loadMessages();
 
-    // Establish WebSocket connection
-    websocket = new WebSocket("wss://chat-online-azd6.onrender.com/");
+    websocket = new WebSocket("wss://chat-online-azd6.onrender.com//");
     websocket.onmessage = processMessage;
-    websocket.onerror = (error) => console.error("WebSocket error:", error);
 }
 
-// Function to send messages
 const sendMessage = (event) => {
     event.preventDefault();
-    const messageContent = chatInput.value.trim();
-
-    if (!messageContent) {
-        alert("Please enter a message.");
-        return;
-    }
 
     const message = {
         userId: user.id,
         userName: user.name,
         userColor: user.color,
-        content: messageContent
+        content: chatInput.value
     };
 
     websocket.send(JSON.stringify(message));
     chatInput.value = "";
 }
 
-// Event listeners
 loginForm.addEventListener("submit", handleLogin);
 chatForm.addEventListener("submit", sendMessage);
