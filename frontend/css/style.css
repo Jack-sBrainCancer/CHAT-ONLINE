@@ -19,7 +19,7 @@ body {
 
 .container {
     width: 100%;
-    height: 100vh; /* 100% da altura da viewport */
+    height: 75vh; /* 100% da altura da viewport */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -86,17 +86,16 @@ body {
     height: 100%;
     display: none;
     flex-direction: column;
-    justify-content: flex-start; /* Alterado para flex-start para manter a ordem correta */
 }
 
 .chat__messages {
     flex-grow: 1;
-    padding: 30px 30px 90px;
+    padding: 30px 30px 0; /* Remove o padding inferior */
     display: flex;
     flex-direction: column;
-    justify-content: flex-end; /* Mantenha as mensagens no final */
+    justify-content: flex-start; /* Começar do topo */
     overflow-y: auto; /* Permitir rolagem dentro da área de mensagens */
-    max-height: calc(100vh - 150px); /* Ajustar para acomodar a altura do formulário */
+    max-height: calc(100vh - 150px); /* Calcula a altura disponível */
 }
 
 .chat__form {
