@@ -90,11 +90,9 @@ const getRandomColor = () => {
     return colors[randomIndex];
 }
 
+// Função para rolar a tela automaticamente para a última mensagem
 const scrollScreen = () => {
-    window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth"
-    });
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Rolagem para a parte inferior das mensagens
 }
 
 const updateOnlineUsers = () => {
@@ -115,25 +113,25 @@ const processMessage = ({ data }) => {
     } else if (event === "user_disconnected") {
         onlineUsers.delete(userName);
         updateOnlineUsers();
+    } else {
+        const message = {
+            userId,
+            userName,
+            userColor,
+            content
+        };
+
+        // Armazenar a mensagem no localStorage
+        storeMessage(message);
+
+        const messageElement =
+            userId === user.id
+                ? createMessageSelfElement(content)
+                : createMessageOtherElement(content, userName, userColor);
+
+        chatMessages.appendChild(messageElement);
+        scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
     }
-
-    const message = {
-        userId,
-        userName,
-        userColor,
-        content
-    };
-
-    // Armazenar a mensagem no localStorage
-    storeMessage(message);
-
-    const messageElement =
-        userId === user.id
-            ? createMessageSelfElement(content)
-            : createMessageOtherElement(content, userName, userColor);
-
-    chatMessages.appendChild(messageElement);
-    scrollScreen();
 }
 
 const handleLogin = (event) => {
@@ -149,7 +147,7 @@ const handleLogin = (event) => {
     // Carregar mensagens do localStorage
     loadMessages();
 
-    websocket = new WebSocket("wss://chat-online-azd6.onrender.com//");
+    websocket = new WebSocket("wss://chat-online-azd6.onrender.com/");
     websocket.onmessage = processMessage;
 
     // Envia uma mensagem para informar que o usuário se conectou
