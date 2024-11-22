@@ -1,15 +1,14 @@
-// Seleciona elementos de login
+// login elements
 const login = document.querySelector(".login");
 const loginForm = login.querySelector(".login__form");
 const loginInput = login.querySelector(".login__input");
 
-// Seleciona elementos do chat
+// chat elements
 const chat = document.querySelector(".chat");
 const chatForm = chat.querySelector(".chat__form");
 const chatInput = chat.querySelector(".chat__input");
 const chatMessages = chat.querySelector(".chat__messages");
 
-// Cores disponíveis para os usuários
 const colors = [
     "cadetblue",
     "darkgoldenrod",
@@ -19,180 +18,83 @@ const colors = [
     "gold"
 ];
 
-// Informações do usuário
 const user = { id: "", name: "", color: "" };
-
 let websocket;
-let mediaRecorder;
-let audioChunks = [];
 
-// Função para criar um elemento de mensagem do próprio usuário
-const createMessageSelfElement = (content) => {
+// Function to create a message element
+const createMessageElement = (content, sender = null, senderColor = null, isSelf = false) => {
     const div = document.createElement("div");
-    div.classList.add("message--self");
-    div.innerHTML = content;
-
     const timeSpan = document.createElement("span");
-    timeSpan.innerHTML = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    timeSpan.classList.add("message-time");
 
+    div.classList.add(isSelf ? "message--self" : "message--other");
+
+    if (!isSelf) {
+        const span = document.createElement("span");
+        span.classList.add("message--sender");
+        span.style.color = senderColor;
+        span.innerHTML = sender;
+        div.appendChild(span);
+    }
+
+    div.innerHTML += content;
+
+    // Get current time and format it
+    const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    timeSpan.innerHTML = currentTime;
+    timeSpan.classList.add("message-time");
+    
     div.appendChild(timeSpan);
     return div;
-};
+}
 
-// Função para criar um elemento de mensagem de outro usuário
-const createMessageOtherElement = (content, sender, senderColor) => {
-    const div = document.createElement("div");
-    div.classList.add("message--other");
-
-    const span = document.createElement("span");
-    span.classList.add("message--sender");
-    span.style.color = senderColor;
-    span.innerHTML = sender;
-
-    div.appendChild(span);
-    div.innerHTML += content; // Adiciona o conteúdo da mensagem
-
-    const timeSpan = document.createElement("span");
-    timeSpan.innerHTML = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    timeSpan.classList.add("message-time");
-
-    div.appendChild(timeSpan);
-    return div;
-};
-
-// Função para armazenar mensagens no localStorage
+// Function to store messages in localStorage
 const storeMessage = (message) => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.push(message);
     localStorage.setItem("chatMessages", JSON.stringify(messages));
-};
+}
 
-// Função para carregar mensagens do localStorage
+// Function to load messages from localStorage
 const loadMessages = () => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.forEach(msg => {
-        const messageElement =
-            msg.userId === user.id
-                ? createMessageSelfElement(msg.content)
-                : createMessageOtherElement(msg.content, msg.userName, msg.userColor);
+        const messageElement = createMessageElement(msg.content, msg.userName, msg.userColor, msg.userId === user.id);
         chatMessages.appendChild(messageElement);
     });
     scrollScreen();
-};
+}
 
-// Função para gerar uma cor aleatória
-const getRandomColor = () => {
-    return colors[Math.floor(Math.random() * colors.length)];
-};
+// Function to get a random color
+const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
-// Função para rolar a tela até a parte inferior
+// Function to scroll the chat window
 const scrollScreen = () => {
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-};
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-// Função para processar mensagens recebidas
+// Function to handle incoming messages
 const processMessage = ({ data }) => {
     const { userId, userName, userColor, content } = JSON.parse(data);
     const message = { userId, userName, userColor, content };
 
     storeMessage(message);
-
-    const messageElement = document.createElement("div");
-
-    if (userId === user.id) {
-        messageElement.classList.add("message--self");
-    } else {
-        messageElement.classList.add("message--other");
-        const senderSpan = document.createElement("span");
-        senderSpan.classList.add("message--sender");
-        senderSpan.style.color = userColor;
-        senderSpan.innerHTML = userName;
-        messageElement.appendChild(senderSpan);
-    }
-
-    // Verifica se o conteúdo é um blob de áudio
-    if (content.startsWith('blob:')) {
-        const audioElement = document.createElement("audio");
-        audioElement.src = content;
-        audioElement.controls = true; // Adiciona controles ao player de áudio
-        messageElement.appendChild(audioElement);
-    } else {
-        messageElement.innerHTML += content; // Para mensagens de texto
-    }
-
-    const timeSpan = document.createElement("span");
-    timeSpan.innerHTML = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    timeSpan.classList.add("message-time");
-    messageElement.appendChild(timeSpan);
-
+    const messageElement = createMessageElement(content, userName, userColor, userId === user.id);
     chatMessages.appendChild(messageElement);
     scrollScreen();
-};
+}
 
-// Função para lidar com a gravação de áudio
-const handleAudioRecording = () => {
-    const recordButton = document.getElementById("recordButton");
-
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        mediaRecorder = new MediaRecorder(stream);
-
-        recordButton.onmousedown = () => {
-            audioChunks = []; // Limpa os chunks de áudio
-            mediaRecorder.start();
-            recordButton.innerHTML = '<span class="material-symbols-outlined">stop</span>'; // Muda o ícone para "parar"
-            console.log("Gravação iniciada");
-        };
-
-        recordButton.onmouseup = () => {
-            mediaRecorder.stop();
-            recordButton.innerHTML = '<span class="material-symbols-outlined">mic</span>'; // Muda o ícone de volta para "microfone"
-            console.log("Gravação parada");
-        };
-
-        recordButton.ontouchstart = () => {
-            audioChunks = []; // Limpa os chunks de áudio
-            mediaRecorder.start();
-            recordButton.innerHTML = '<span class="material-symbols-outlined">stop</span>'; // Muda o ícone para "parar"
-            console.log("Gravação iniciada (tocar)");
-        };
-
-        recordButton.ontouchend = () => {
-            mediaRecorder.stop();
-            recordButton.innerHTML = '<span class="material-symbols-outlined">mic</span>'; // Muda o ícone de volta para "microfone"
-            console.log("Gravação parada (tocar)");
-        };
-
-        mediaRecorder.ondataavailable = event => {
-            audioChunks.push(event.data);
-        };
-
-        mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const audioUrl = URL.createObjectURL(audioBlob);
-            
-            // Cria uma mensagem com a URL do áudio
-            const message = {
-                userId: user.id,
-                userName: user.name,
-                userColor: user.color,
-                content: audioUrl // Envie a URL do áudio
-            };
-
-            websocket.send(JSON.stringify(message));
-            console.log("Áudio enviado:", audioUrl);
-        };
-    }).catch(err => {
-        console.error("Erro ao acessar o microfone:", err);
-    });
-};
-
-// Função para lidar com o login do usuário
+// Function to handle user login
 const handleLogin = (event) => {
     event.preventDefault();
+    const username = loginInput.value.trim();
+
+    if (!username) {
+        alert("Please enter a username.");
+        return;
+    }
 
     user.id = crypto.randomUUID();
-    user.name = loginInput.value;
+    user.name = username;
     user.color = getRandomColor();
 
     login.style.display = "none";
@@ -200,27 +102,33 @@ const handleLogin = (event) => {
 
     loadMessages();
 
+    // Establish WebSocket connection
     websocket = new WebSocket("wss://chat-online-azd6.onrender.com/");
     websocket.onmessage = processMessage;
+    websocket.onerror = (error) => console.error("WebSocket error:", error);
+}
 
-    handleAudioRecording(); // Chama a função de gravação
-};
-
-// Função para enviar mensagens
+// Function to send messages
 const sendMessage = (event) => {
     event.preventDefault();
+    const messageContent = chatInput.value.trim();
+
+    if (!messageContent) {
+        alert("Please enter a message.");
+        return;
+    }
 
     const message = {
         userId: user.id,
         userName: user.name,
         userColor: user.color,
-        content: chatInput.value
+        content: messageContent
     };
 
     websocket.send(JSON.stringify(message));
-    chatInput.value = ""; // Limpa o campo de entrada
-};
+    chatInput.value = "";
+}
 
-// Adiciona eventos de submit
+// Event listeners
 loginForm.addEventListener("submit", handleLogin);
 chatForm.addEventListener("submit", sendMessage);
