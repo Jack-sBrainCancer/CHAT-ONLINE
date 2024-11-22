@@ -97,6 +97,7 @@ body {
     justify-content: flex-start; /* Começar do topo */
     overflow-y: auto; /* Permitir rolagem dentro da área de mensagens */
     max-height: calc(100vh - 100px); /* Limitar altura para permitir rolagem */
+    bottom:100px;
 }
 
 .chat__form {
