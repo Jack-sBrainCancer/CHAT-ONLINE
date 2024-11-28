@@ -9,6 +9,7 @@ const chatForm = chat.querySelector(".chat__form");
 const chatInput = chat.querySelector(".chat__input");
 const chatMessages = chat.querySelector(".chat__messages");
 const usersList = chat.querySelector(".users-list");
+const chatFileInput = chat.querySelector(".chat__file-input");
 
 const colors = [
     "cadetblue",
@@ -34,7 +35,6 @@ const createMessageSelfElement = (content) => {
     div.classList.add("message--self");
     div.innerHTML = content;
 
-    // Obter a hora atual e formatá-la
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     timeSpan.innerHTML = currentTime;
     timeSpan.classList.add("message-time");
@@ -56,9 +56,8 @@ const createMessageOtherElement = (content, sender, senderColor) => {
 
     span.innerHTML = sender;
     div.appendChild(span);
-    div.innerHTML += content; // Adiciona conteúdo HTML diretamente
+    div.innerHTML += content;
 
-    // Obter a hora atual e formatá-la
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     timeSpan.innerHTML = currentTime;
     timeSpan.classList.add("message-time");
@@ -67,7 +66,7 @@ const createMessageOtherElement = (content, sender, senderColor) => {
     return div;
 }
 
-// Função para armazenar mensagens (texto e áudio) no localStorage
+// Função para armazenar mensagens (texto, áudio e imagem) no localStorage
 const storeMessage = (message) => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.push(message);
@@ -79,15 +78,20 @@ const loadMessages = () => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.forEach(msg => {
         if (msg.event === "audio_message") {
-            // Se for uma mensagem de áudio, cria o player de áudio
             const audioElement = document.createElement('audio');
-            audioElement.controls = true; // Mantém os controles padrão
-            audioElement.src = `data:audio/wav;base64,${msg.content}`; // Define a fonte do áudio
+            audioElement.controls = true;
+            audioElement.src = `data:audio/wav;base64,${msg.content}`;
 
             const messageElement = createMessageOtherElement(audioElement.outerHTML, msg.userName, msg.userColor);
             chatMessages.appendChild(messageElement);
+        } else if (msg.event === "image_message") {
+            const imgElement = document.createElement('img');
+            imgElement.src = `data:image/png;base64,${msg.content}`;
+            imgElement.style.maxWidth = '100%';
+
+            const messageElement = createMessageOtherElement(imgElement.outerHTML, msg.userName, msg.userColor);
+            chatMessages.appendChild(messageElement);
         } else {
-            // Para mensagens de texto
             const messageElement =
                 msg.userId === user.id
                     ? createMessageSelfElement(msg.content)
@@ -103,13 +107,12 @@ const getRandomColor = () => {
     return colors[randomIndex];
 }
 
-// Função para rolar a tela automaticamente para a última mensagem
 const scrollScreen = () => {
-    chatMessages.scrollTop = chatMessages.scrollHeight; // Rolagem para a parte inferior das mensagens
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 const updateOnlineUsers = () => {
-    usersList.innerHTML = ""; // Limpa a lista atual
+    usersList.innerHTML = "";
     onlineUsers.forEach(userName => {
         const userDiv = document.createElement("div");
         userDiv.textContent = userName;
@@ -127,16 +130,13 @@ const processMessage = ({ data }) => {
         onlineUsers.delete(userName);
         updateOnlineUsers();
     } else if (event === "audio_message") {
-        // Criação de um elemento de áudio
         const audioElement = document.createElement('audio');
-        audioElement.controls = true; // Mantém os controles padrão
-        audioElement.src = `data:audio/wav;base64,${content}`; // Define a fonte do áudio
+        audioElement.controls = true;
+        audioElement.src = `data:audio/wav;base64,${content}`;
 
-        // Cria uma mensagem para adicionar ao chat
         const messageElement = createMessageOtherElement(audioElement.outerHTML, userName, userColor);
         chatMessages.appendChild(messageElement);
 
-        // Armazenar a mensagem no localStorage
         storeMessage({
             userId,
             userName,
@@ -145,7 +145,24 @@ const processMessage = ({ data }) => {
             event: "audio_message"
         });
 
-        scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
+        scrollScreen();
+    } else if (event === "image_message") {
+        const imgElement = document.createElement('img');
+        imgElement.src = `data:image/png;base64,${content}`;
+        imgElement.style.maxWidth = '100%';
+
+        const messageElement = createMessageOtherElement(imgElement.outerHTML, userName, userColor);
+        chatMessages.appendChild(messageElement);
+
+        storeMessage({
+            userId,
+            userName,
+            userColor,
+            content: content,
+            event: "image_message"
+        });
+
+        scrollScreen();
     } else {
         const message = {
             userId,
@@ -154,7 +171,6 @@ const processMessage = ({ data }) => {
             content
         };
 
-        // Armazenar a mensagem no localStorage
         storeMessage(message);
 
         const messageElement =
@@ -163,7 +179,7 @@ const processMessage = ({ data }) => {
                 : createMessageOtherElement(content, userName, userColor);
 
         chatMessages.appendChild(messageElement);
-        scrollScreen(); // Rolagem para a parte inferior após adicionar nova mensagem
+        scrollScreen();
     }
 }
 
@@ -177,13 +193,11 @@ const handleLogin = (event) => {
     login.style.display = "none";
     chat.style.display = "flex";
 
-    // Carregar mensagens do localStorage
     loadMessages();
 
     websocket = new WebSocket("wss://chat-online-azd6.onrender.com/");
     websocket.onmessage = processMessage;
 
-    // Envia uma mensagem para informar que o usuário se conectou
     websocket.send(JSON.stringify({ event: "user_connected", userName: user.name, userId: user.id }));
 }
 
@@ -201,6 +215,32 @@ const sendMessage = (event) => {
     chatInput.value = "";
 }
 
+// Função para enviar um arquivo (imagem ou áudio)
+const sendFile = (file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        const fileData = reader.result.split(',')[1];
+        const fileMessage = {
+            userId: user.id,
+            userName: user.name,
+            userColor: user.color,
+            content: fileData,
+            event: file.type.startsWith('audio/') ? "audio_message" : "image_message"
+        };
+        websocket.send(JSON.stringify(fileMessage));
+    };
+    reader.readAsDataURL(file);
+};
+
+// Função para lidar com o upload de arquivos
+chatFileInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        sendFile(file);
+        chatFileInput.value = ""; // Limpa o campo após o envio
+    }
+});
+
 // Função para iniciar a gravação
 const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -213,8 +253,8 @@ const startRecording = async () => {
 
     mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        sendAudio(audioBlob); // Envia o áudio para o servidor
-        audioChunks = []; // Limpa os chunks para a próxima gravação
+        sendAudio(audioBlob);
+        audioChunks = [];
     };
 };
 
@@ -227,17 +267,17 @@ const stopRecording = () => {
 const sendAudio = (audioBlob) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-        const audioData = reader.result.split(',')[1]; // Converte para base64
+        const audioData = reader.result.split(',')[1];
         const audioMessage = {
             userId: user.id,
             userName: user.name,
             userColor: user.color,
-            content: audioData, // O conteúdo do áudio em base64
-            event: "audio_message" // Tipo de evento
+            content: audioData,
+            event: "audio_message"
         };
         websocket.send(JSON.stringify(audioMessage));
     };
-    reader.readAsDataURL(audioBlob); // Lê o blob como URL
+    reader.readAsDataURL(audioBlob);
 };
 
 // Adiciona eventos ao botão de gravação
@@ -251,3 +291,4 @@ document.getElementById('recordButton').addEventListener('click', () => {
 
 loginForm.addEventListener("submit", handleLogin);
 chatForm.addEventListener("submit", sendMessage);
+
