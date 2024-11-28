@@ -66,7 +66,7 @@ const createMessageOtherElement = (content, sender, senderColor) => {
     return div;
 }
 
-// Função para armazenar mensagens (texto, áudio, imagem e PDF) no localStorage
+// Função para armazenar mensagens (texto, áudio, imagem, PDF e vídeo) no localStorage
 const storeMessage = (message) => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.push(message);
@@ -100,6 +100,14 @@ const loadMessages = () => {
             pdfLink.style.color = '#FFDD00'; // Cor do link
 
             const messageElement = createMessageOtherElement(pdfLink.outerHTML, msg.userName, msg.userColor);
+            chatMessages.appendChild(messageElement);
+        } else if (msg.event === "video_message") {
+            const videoElement = document.createElement('video');
+            videoElement.controls = true;
+            videoElement.src = `data:video/mp4;base64,${msg.content}`; // Supondo que o vídeo seja MP4
+            videoElement.style.maxWidth = '100%';
+
+            const messageElement = createMessageOtherElement(videoElement.outerHTML, msg.userName, msg.userColor);
             chatMessages.appendChild(messageElement);
         } else {
             const messageElement =
@@ -193,6 +201,24 @@ const processMessage = ({ data }) => {
         });
 
         scrollScreen();
+    } else if (event === "video_message") {
+        const videoElement = document.createElement('video');
+        videoElement.controls = true;
+        videoElement.src = `data:video/mp4;base64,${content}`; // Supondo que o vídeo seja MP4
+        videoElement.style.maxWidth = '100%';
+
+        const messageElement = createMessageOtherElement(videoElement.outerHTML, userName, userColor);
+        chatMessages.appendChild(messageElement);
+
+        storeMessage({
+            userId,
+            userName,
+            userColor,
+            content: content,
+            event: "video_message"
+        });
+
+        scrollScreen();
     } else {
         const message = {
             userId,
@@ -245,7 +271,7 @@ const sendMessage = (event) => {
     chatInput.value = "";
 }
 
-// Função para enviar um arquivo (imagem, áudio ou PDF)
+// Função para enviar um arquivo (imagem, áudio, PDF ou vídeo)
 const sendFile = (file) => {
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -257,7 +283,8 @@ const sendFile = (file) => {
             content: fileData,
             event: file.type.startsWith('audio/') ? "audio_message" :
                    file.type.startsWith('image/') ? "image_message" :
-                   file.type === 'application/pdf' ? "pdf_message" : null
+                   file.type === 'application/pdf' ? "pdf_message" :
+                   file.type.startsWith('video/') ? "video_message" : null // Adiciona suporte a vídeos
         };
         
         if (fileMessage.event) {
@@ -278,8 +305,7 @@ chatFileInput.addEventListener("change", (event) => {
 
 // Função para iniciar a gravação
 const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio:
-    true });
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(stream);
 
     mediaRecorder.start();
