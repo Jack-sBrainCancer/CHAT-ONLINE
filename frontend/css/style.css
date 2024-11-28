@@ -113,7 +113,7 @@ body {
 
 .chat__input {
     border: 2px solid #00FF1E; 
-    padding: 15px;
+    padding: 10px;
     border-radius: 8px;
     flex-grow: 1;
     background-color: #212121;
@@ -202,3 +202,27 @@ body {
 .record-button:hover {
     transform: scale(1.1); 
 }
+
+.file-input-wrapper {
+            display: inline-block;
+            position: relative;
+        }
+
+        .chat__file-input {
+            display: none; /* Esconde o input original */
+        }
+
+        .file-input-button {
+            
+            color: white; /* Cor do texto */
+            padding: 10px 10px; /* Espaçamento interno */
+            border: none; /* Sem borda */
+            border-radius: 5px; /* Bordas arredondadas */
+            cursor: pointer; /* Cursor de ponteiro ao passar o mouse */
+            display: flex;
+            align-items: center; /* Alinha verticalmente */
+        }
+
+        .file-input-button span {
+            margin-right: 8px; /* Espaçamento entre o ícone e o texto */
+        }
