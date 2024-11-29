@@ -1,6 +1,6 @@
 {
   "name": "Chat Online",
-  "short_name": "App Web",
+  "short_name": "Chat Online",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
