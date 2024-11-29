@@ -177,10 +177,11 @@ body {
     margin-top: 2px; 
 }
 
-.chat__users {
+.menu__config {
     background-color: rgba(18, 18, 18, 0.9); 
     padding: 10px;
     border-radius: 5px;
+    display:inline-flex;
     margin-bottom: 15px;
     box-shadow: 0 0 10px rgba(0, 255, 30, 0.5); 
 }
@@ -226,3 +227,40 @@ body {
         .file-input-button span {
             margin-right: 8px; /* Espaçamento entre o ícone e o texto */
         }
+        
+        .delete-button {
+  background-color:transparent;
+  border: none;
+  color:green;
+  position: absolute;
+  top:10px;
+  left:10px;
+  align-items: center;
+  justify-content: center;
+  display:flex;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 24px; /* Ajuste o tamanho conforme necessário */
+}
+
+.menu-button {
+  background-color: transparent;
+  border: none;
+  color:green;
+  cursor: pointer;
+  font-size: 24px; /* Ajuste o tamanho conforme necessário */
+  margin-bottom: 10px; /* Espaço entre o botão e o título */
+}
+.z {
+  position: fixed;
+      top:9%;
+      bottom:30%;
+      left:3px;
+      width: 12%;
+      height:30%;
+      background-color: rgba(18, 18, 18, 0.9);
+      box-shadow: 0 0 10px rgba(0, 255, 30, 0.5); 
+      z-index: 999; /* Certifique-se de que o menu fique acima de outros elementos */
+      display: none; /* Oculta o menu inicialmente */
+      border-radius: 0 0 15px 15px;
+    }
