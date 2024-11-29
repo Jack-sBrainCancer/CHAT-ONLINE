@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="https://cdn.icon-icons.com/icons2/966/PNG/128/News_icon-icons.com_74697.png" sizes="192x192">
   <title>Chat | &copy; LØS3R</title>
 </head>
 
@@ -56,6 +58,12 @@
     <button id="deleteMessagesButton" class="delete-button">
       <span class="material-symbols-outlined">delete</span>
     </button>
+    <button class="export-button" onclick="exportMessages()">
+      <span class="material-symbols-outlined">file_download</span>
+    </button>
+       <button id="add-button">
+         <span class="material-icons-outlined">add</span>
+       </button>
   </div>
   <script src="./js/script.js"></script>
 </body>
