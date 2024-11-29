@@ -264,3 +264,35 @@ body {
       display: none; /* Oculta o menu inicialmente */
       border-radius: 0 0 15px 15px;
     }
+    .export-button {
+      background-color:transparent;
+  border: none;
+  color:green;
+  position: absolute;
+  top:40px;
+  left:10px;
+  align-items: center;
+  justify-content: center;
+  display:flex;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 24px; /* Ajuste o tamanho conforme necessário */
+    }
+    
+      #add-button {
+            background-color:transparent;
+  border: none;
+  color:green;
+  position: absolute;
+  top:60px;
+  left:10px;
+  align-items: center;
+  justify-content: center;
+  display:flex;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 24px; /* Ajuste o tamanho conforme necessário */
+        }
+        #add-button:hover {
+            background-color: #0056b3;
+        }
