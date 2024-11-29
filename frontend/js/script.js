@@ -367,3 +367,44 @@ function a() {
   const menu = document.getElementById("z");
   menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
+function exportMessages() {
+  const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+
+  // Constrói o conteúdo do arquivo TXT apenas com Nome e Mensagem
+  const txtContent = messages.map(msg => {
+    return `${msg.userName}: ${msg.content}`; // Formato: Nome: Mensagem
+  }).join("\n");
+
+  // Cria um Blob com o conteúdo
+  const blob = new Blob([txtContent], { type: 'text/plain' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "mensagens.txt"; // Nome do arquivo a ser baixado
+  document.body.appendChild(link); // Necessário para Firefox
+
+  link.click(); // Aciona o download
+  document.body.removeChild(link); // Remove o link após o download
+}
+
+
+let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          const addBtn = document.querySelector('#add-button');
+          addBtn.style.display = 'flex';
+        
+          addBtn.addEventListener('click', () => {
+            addBtn.style.display = 'block';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+              if (choiceResult.outcome === 'accepted') {
+                console.log('Usuário aceitou o prompt de instalação');
+              } else {
+                console.log('Usuário rejeitou o prompt de instalação');
+              }
+              deferredPrompt = null;
+            });
+          });
+        });
