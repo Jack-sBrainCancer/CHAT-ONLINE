@@ -354,3 +354,16 @@ document.getElementById('recordButton').addEventListener('click', () => {
 // Adiciona os eventos de login e envio de mensagens
 loginForm.addEventListener("submit", handleLogin);
 chatForm.addEventListener("submit", sendMessage);
+
+const clearMessages = () => {
+  chatMessages.innerHTML = ""; // Limpa o conteúdo da seção de mensagens
+  localStorage.removeItem("chatMessages"); // Remove as mensagens do localStorage
+}
+
+// Adiciona evento ao botão de deletar mensagens
+document.getElementById('deleteMessagesButton').addEventListener('click', clearMessages);
+
+function a() {
+  const menu = document.getElementById("z");
+  menu.style.display = (menu.style.display === "block") ? "none" : "block";
+}
