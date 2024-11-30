@@ -117,13 +117,21 @@ let onlineUsers = new Set();
 let mediaRecorder;
 let audioChunks = [];
 
+// Função para identificar URLs e convertê-las em links
+const convertUrlsToLinks = (text) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g; // Regex para identificar URLs
+    return text.replace(urlRegex, (url) => {
+        return `<a href="${url}" target="_blank" style="color: #1E90FF;">${url}</a>`;
+    });
+}
+
 // Função para criar um elemento de mensagem do próprio usuário
 const createMessageSelfElement = (content) => {
     const div = document.createElement("div");
     const timeSpan = document.createElement("span");
 
     div.classList.add("message--self");
-    div.innerHTML = content;
+    div.innerHTML = convertUrlsToLinks(content); // Converte URLs antes de adicionar
 
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     timeSpan.innerHTML = currentTime;
@@ -146,7 +154,7 @@ const createMessageOtherElement = (content, sender, senderColor) => {
 
     span.innerHTML = sender;
     div.appendChild(span);
-    div.innerHTML += content;
+    div.innerHTML += convertUrlsToLinks(content); // Converte URLs antes de adicionar
 
     const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     timeSpan.innerHTML = currentTime;
@@ -167,45 +175,14 @@ const storeMessage = (message) => {
 const loadMessages = () => {
     const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
     messages.forEach(msg => {
-        if (msg.event === "audio_message") {
-            const audioElement = document.createElement('audio');
-            audioElement.controls = true;
-            audioElement.src = `data:audio/wav;base64,${msg.content}`;
-
-            const messageElement = createMessageOtherElement(audioElement.outerHTML, msg.userName, msg.userColor);
-            chatMessages.appendChild(messageElement);
-        } else if (msg.event === "image_message") {
-            const imgElement = document.createElement('img');
-            imgElement.src = `data:image/png;base64,${msg.content}`;
-            imgElement.style.maxWidth = '100%';
-
-            const messageElement = createMessageOtherElement(imgElement.outerHTML, msg.userName, msg.userColor);
-            chatMessages.appendChild(messageElement);
-        } else if (msg.event === "pdf_message") {
-            const pdfLink = document.createElement('a');
-            pdfLink.href = `data:application/pdf;base64,${msg.content}`;
-            pdfLink.textContent = "Arquivo PDF enviado";
-            pdfLink.target = "_blank"; // Abre em nova aba
-            pdfLink.download = "document.pdf"; // Sugere um nome para download
-            pdfLink.style.color = '#FFDD00'; // Cor do link
-
-            const messageElement = createMessageOtherElement(pdfLink.outerHTML, msg.userName, msg.userColor);
-            chatMessages.appendChild(messageElement);
-        } else if (msg.event === "video_message") {
-            const videoElement = document.createElement('video');
-            videoElement.controls = true;
-            videoElement.src = `data:video/mp4;base64,${msg.content}`; // Supondo que o vídeo seja MP4
-            videoElement.style.maxWidth = '100%';
-
-            const messageElement = createMessageOtherElement(videoElement.outerHTML, msg.userName, msg.userColor);
-            chatMessages.appendChild(messageElement);
-        } else {
-            const messageElement =
-                msg.userId === user.id
-                    ? createMessageSelfElement(msg.content)
-                    : createMessageOtherElement(msg.content, msg.userName, msg.userColor);
-            chatMessages.appendChild(messageElement);
-        }
+        const messageElement =
+            msg.event === "audio_message" ? createMessageOtherElement('<audio controls src="data:audio/wav;base64,' + msg.content + '"></audio>', msg.userName, msg.userColor) :
+            msg.event === "image_message" ? createMessageOtherElement('<img src="data:image/png;base64,' + msg.content + '" style="max-width: 100%;">', msg.userName, msg.userColor) :
+            msg.event === "pdf_message" ? createMessageOtherElement('<a href="data:application/pdf;base64,' + msg.content + '" target="_blank" style="color: #FFDD00;">Arquivo PDF enviado</a>', msg.userName, msg.userColor) :
+            msg.event === "video_message" ? createMessageOtherElement('<video controls src="data:video/mp4;base64,' + msg.content + '" style="max-width: 100%;"></video>', msg.userName, msg.userColor) :
+            createMessageOtherElement(msg.content, msg.userName, msg.userColor);
+        
+        chatMessages.appendChild(messageElement);
     });
     scrollScreen();
 }
@@ -237,78 +214,6 @@ const processMessage = ({ data }) => {
     } else if (event === "user_disconnected") {
         onlineUsers.delete(userName);
         updateOnlineUsers();
-    } else if (event === "audio_message") {
-        const audioElement = document.createElement('audio');
-        audioElement.controls = true;
-        audioElement.src = `data:audio/wav;base64,${content}`;
-
-        const messageElement = createMessageOtherElement(audioElement.outerHTML, userName, userColor);
-        chatMessages.appendChild(messageElement);
-
-        storeMessage({
-            userId,
-            userName,
-            userColor,
-            content: content,
-            event: "audio_message"
-        });
-
-        scrollScreen();
-    } else if (event === "image_message") {
-        const imgElement = document.createElement('img');
-        imgElement.src = `data:image/png;base64,${content}`;
-        imgElement.style.maxWidth = '100%';
-
-        const messageElement = createMessageOtherElement(imgElement.outerHTML, userName, userColor);
-        chatMessages.appendChild(messageElement);
-
-        storeMessage({
-            userId,
-            userName,
-            userColor,
-            content: content,
-            event: "image_message"
-        });
-
-        scrollScreen();
-    } else if (event === "pdf_message") {
-        const pdfLink = document.createElement('a');
-        pdfLink.href = `data:application/pdf;base64,${content}`;
-        pdfLink.textContent = "Arquivo PDF enviado";
-        pdfLink.target = "_blank"; // Abre em nova aba
-        pdfLink.download = "document.pdf"; // Sugere um nome para download
-        pdfLink.style.color = '#FFDD00'; // Cor do link
-
-        const messageElement = createMessageOtherElement(pdfLink.outerHTML, userName, userColor);
-        chatMessages.appendChild(messageElement);
-
-        storeMessage({
-            userId,
-            userName,
-            userColor,
-            content: content,
-            event: "pdf_message"
-        });
-
-        scrollScreen();
-    } else if (event === "video_message") {
-        const videoElement = document.createElement('video');
-        videoElement.controls = true;
-        videoElement.src = `data:video/mp4;base64,${content}`; // Supondo que o vídeo seja MP4
-        videoElement.style.maxWidth = '100%';
-
-        const messageElement = createMessageOtherElement(videoElement.outerHTML, userName, userColor);
-        chatMessages.appendChild(messageElement);
-
-        storeMessage({
-            userId,
-            userName,
-            userColor,
-            content: content,
-            event: "video_message"
-        });
-
-        scrollScreen();
     } else {
         const message = {
             userId,
@@ -374,7 +279,7 @@ const sendFile = (file) => {
             event: file.type.startsWith('audio/') ? "audio_message" :
                    file.type.startsWith('image/') ? "image_message" :
                    file.type === 'application/pdf' ? "pdf_message" :
-                   file.type.startsWith('video/') ? "video_message" : null // Adiciona suporte a vídeos
+                   file.type.startsWith('video/') ? "video_message" : null
         };
         
         if (fileMessage.event) {
@@ -446,73 +351,73 @@ loginForm.addEventListener("submit", handleLogin);
 chatForm.addEventListener("submit", sendMessage);
 
 const clearMessages = () => {
-  chatMessages.innerHTML = ""; // Limpa o conteúdo da seção de mensagens
-  localStorage.removeItem("chatMessages"); // Remove as mensagens do localStorage
+    chatMessages.innerHTML = ""; // Limpa o conteúdo da seção de mensagens
+    localStorage.removeItem("chatMessages"); // Remove as mensagens do localStorage
 }
 
 // Adiciona evento ao botão de deletar mensagens
 document.getElementById('deleteMessagesButton').addEventListener('click', clearMessages);
 
 function a() {
-  const menu = document.getElementById("z");
-  menu.style.display = (menu.style.display === "block") ? "none" : "block";
+    const menu = document.getElementById("z");
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
+
 function exportMessages() {
-  const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+    const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
 
-  // Constrói o conteúdo do arquivo TXT apenas com Nome e Mensagem
-  const txtContent = messages.map(msg => {
-    return `${msg.userName}: ${msg.content}`; // Formato: Nome: Mensagem
-  }).join("\n");
+    // Constrói o conteúdo do arquivo TXT apenas com Nome e Mensagem
+    const txtContent = messages.map(msg => {
+        return `${msg.userName}: ${msg.content}`; // Formato: Nome: Mensagem
+    }).join("\n");
 
-  // Cria um Blob com o conteúdo
-  const blob = new Blob([txtContent], { type: 'text/plain' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "mensagens.txt"; // Nome do arquivo a ser baixado
-  document.body.appendChild(link); // Necessário para Firefox
+    // Cria um Blob com o conteúdo
+    const blob = new Blob([txtContent], { type: 'text/plain' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "mensagens.txt"; // Nome do arquivo a ser baixado
+    document.body.appendChild(link); // Necessário para Firefox
 
-  link.click(); // Aciona o download
-  document.body.removeChild(link); // Remove o link após o download
+    link.click(); // Aciona o download
+    document.body.removeChild(link); // Remove o link após o download
 }
-
 
 let deferredPrompt;
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-          e.preventDefault();
-          deferredPrompt = e;
-          const addBtn = document.querySelector('#add-button');
-          addBtn.style.display = 'flex';
-        
-          addBtn.addEventListener('click', () => {
-            addBtn.style.display = 'block';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-              if (choiceResult.outcome === 'accepted') {
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const addBtn = document.querySelector('#add-button');
+    addBtn.style.display = 'flex';
+
+    addBtn.addEventListener('click', () => {
+        addBtn.style.display = 'block';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
                 console.log('Usuário aceitou o prompt de instalação');
-              } else {
+            } else {
                 console.log('Usuário rejeitou o prompt de instalação');
-              }
-              deferredPrompt = null;
-            });
-          });
+            }
+            deferredPrompt = null;
         });
-        
-        function sharePage() {
-          const pageUrl = window.location.href;
-          const pageTitle = document.title;
-        
-          if (navigator.share) {
-            navigator.share({
-              title: pageTitle,
-              url: pageUrl,
-            }).then(() => {
-              console.log('Página compartilhada com sucesso.');
-            }).catch((error) => {
-              console.error('Erro ao compartilhar a página:', error);
-            });
-          } else {
-            alert('O compartilhamento não é suportado neste navegador. Copie o link: ' + pageUrl);
-          }
-        }
+    });
+});
+
+function sharePage() {
+    const pageUrl = window.location.href;
+    const pageTitle = document.title;
+
+    if (navigator.share) {
+        navigator.share({
+            title: pageTitle,
+            url: pageUrl,
+        }).then(() => {
+            console.log('Página compartilhada com sucesso.');
+        }).catch((error) => {
+            console.error('Erro ao compartilhar a página:', error);
+        });
+    } else {
+        alert('O compartilhamento não é suportado neste navegador. Copie o link: ' + pageUrl);
+    }
+}
