@@ -420,4 +420,4 @@ function sharePage() {
     } else {
         alert('O compartilhamento não é suportado neste navegador. Copie o link: ' + pageUrl);
     }
-}
+                        }
