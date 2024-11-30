@@ -12,12 +12,102 @@ const usersList = chat.querySelector(".users-list");
 const chatFileInput = chat.querySelector(".chat__file-input");
 
 const colors = [
-    "cadetblue",
-    "darkgoldenrod",
-    "cornflowerblue",
-    "darkkhaki",
-    "hotpink",
-    "gold"
+    "#00FFFF", // Aqua
+    "#FF00FF", // Fuchsia
+    "#FF1493", // DeepPink
+    "#00BFFF", // DeepSkyBlue
+    "#8A2BE2", // BlueViolet
+    "#FF4500", // OrangeRed
+    "#ADFF2F", // GreenYellow
+    "#FF6347", // Tomato
+    "#FF7F50", // Coral
+    "#1E90FF", // DodgerBlue
+    "#DA70D6", // Orchid
+    "#FFD700", // Gold
+    "#7FFF00", // Chartreuse
+    "#00FA9A", // MediumSpringGreen
+    "#FF8C00", // DarkOrange
+    "#9400D3", // DarkViolet
+    "#00FF7F", // SpringGreen
+    "#BA55D3", // MediumOrchid
+    "#FF69B4", // HotPink
+    "#B22222", // FireBrick
+    "#FFB6C1", // LightPink
+    "#ADFF2F", // GreenYellow
+    "#32CD32", // LimeGreen
+    "#8B008B", // DarkMagenta
+    "#7B68EE", // MediumSlateBlue
+    "#48D1CC", // MediumTurquoise
+    "#9B30FF", // Purple
+    "#FF00FF", // Magenta
+    "#00CED1", // DarkTurquoise
+    "#FF1493", // DeepPink
+    "#8B0000", // DarkRed
+    "#FFD700", // Gold
+    "#00FF00", // Lime
+    "#7FFF00", // Chartreuse
+    "#B0E0E6", // PowderBlue
+    "#FF6347", // Tomato
+    "#FF8C00", // DarkOrange
+    "#00BFFF", // DeepSkyBlue
+    "#9932CC", // DarkOrchid
+    "#FF77FF", // BrightPink
+    "#7B68EE", // MediumSlateBlue
+    "#FF4500", // OrangeRed
+    "#FF69B4", // HotPink
+    "#C71585", // MediumVioletRed
+    "#BA55D3", // MediumOrchid
+    "#FFD700", // Gold
+    "#FFB6C1", // LightPink
+    "#FF1493", // DeepPink
+    "#2E8B57", // SeaGreen
+    "#1E90FF", // DodgerBlue
+    "#FF6347", // Tomato
+    "#ADFF2F", // GreenYellow
+    "#FF00FF", // Magenta
+    "#8A2BE2", // BlueViolet
+    "#00FFFF", // Aqua
+    "#FF00FF", // Fuchsia
+    "#8B008B", // DarkMagenta
+    "#FF8C00", // DarkOrange
+    "#9400D3", // DarkViolet
+    "#00FA9A", // MediumSpringGreen
+    "#32CD32", // LimeGreen
+    "#FF69B4", // HotPink
+    "#FF4500", // OrangeRed
+    "#7FFF00", // Chartreuse
+    "#C71585", // MediumVioletRed
+    "#FF77FF", // BrightPink
+    "#4682B4", // SteelBlue
+    "#5F9EA0", // CadetBlue
+    "#66CDAA", // MediumAquamarine
+    "#20B2AA", // LightSeaGreen
+    "#FFB6C1", // LightPink
+    "#FF1493", // DeepPink
+    "#FFD700", // Gold
+    "#FF4500", // OrangeRed
+    "#9932CC", // DarkOrchid
+    "#ADFF2F", // GreenYellow
+    "#00CED1", // DarkTurquoise
+    "#FF6347", // Tomato
+    "#8B0000", // DarkRed
+    "#00BFFF", // DeepSkyBlue
+    "#FF69B4", // HotPink
+    "#FF00FF", // Magenta
+    "#7B68EE", // MediumSlateBlue
+    "#32CD32", // LimeGreen
+    "#8A2BE2", // BlueViolet
+    "#00FFFF", // Aqua
+    "#FF00FF", // Fuchsia
+    "#FF1493", // DeepPink
+    "#00BFFF", // DeepSkyBlue
+    "#FF4500", // OrangeRed
+    "#ADFF2F", // GreenYellow
+    "#00FA9A", // MediumSpringGreen
+    "#FF6347", // Tomato
+    "#7FFF00", // Chartreuse
+    "#FF7F50", // Coral
+    "#1E90FF" // DodgerBlue
 ];
 
 const user = { id: "", name: "", color: "" };
