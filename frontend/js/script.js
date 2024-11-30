@@ -408,3 +408,21 @@ let deferredPrompt;
             });
           });
         });
+        
+        function sharePage() {
+          const pageUrl = window.location.href;
+          const pageTitle = document.title;
+        
+          if (navigator.share) {
+            navigator.share({
+              title: pageTitle,
+              url: pageUrl,
+            }).then(() => {
+              console.log('Página compartilhada com sucesso.');
+            }).catch((error) => {
+              console.error('Erro ao compartilhar a página:', error);
+            });
+          } else {
+            alert('O compartilhamento não é suportado neste navegador. Copie o link: ' + pageUrl);
+          }
+        }
