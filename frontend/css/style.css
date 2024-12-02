@@ -14,6 +14,7 @@
 body {
   background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQb34mKFgUHnMmW0DznkKRvKWaEr1fKRgIpJtvs_zj27B8hiTlZVcNf0-rk&s=10");
   color: #00FF1E;
+  user-select: none;
   overflow: hidden;
 }
 
@@ -263,7 +264,19 @@ body {
   margin-bottom: 10px;
   /* Espaço entre o botão e o título */
 }
-
+.infocon {
+  position: fixed;
+  top: 9%;
+  bottom: 30%;
+  left: 60px;
+  width: 60%;
+  height: 30%;
+  background-color: rgba(0, 0, 0, 0.41);
+  box-shadow: 0 0 10px rgba(0, 255, 30, 0.5);
+  z-index: 999;
+  display: none;
+  border-radius: 0 0 15px 15px;
+}
 .z {
   position: fixed;
   top: 9%;
@@ -325,4 +338,28 @@ body {
   cursor: pointer;
   margin-top: 10px;
   font-size: 24px;
+}
+.info__btn {
+  background-color: transparent;
+  border: none;
+  color: green;
+  position: absolute;
+  top: 130px;
+  left: 10px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 24px;
+}
+.info__paragraph {
+  margin:10px;
+  font-family: 'Times New Roman', serif
+  ;font-size: 12px;
+  color:rgba(255, 255, 255, 1);
+}
+.info__paragraph::first-letter {
+  font-size: 18pt;
+  font-weight: bolder;
 }
