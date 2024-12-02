@@ -19,9 +19,9 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="https://cdn.icon-icons.com/icons2/966/PNG/128/News_icon-icons.com_74697.png" sizes="192x192">
   <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+   <script src="https://cdn.tailwindcss.com"></script>
   <title>Chat | &copy; LØS3R</title>
 </head>
-
 <body>
   <section class="container">
     <section class="login">
@@ -47,7 +47,6 @@
         <button type="button" class="record-button" id="recordButton">
           <span class="material-symbols-outlined">mic</span>
         </button>
-        <!-- Campo de upload de imagem, áudio, PDF e vídeo -->
         <input type="file" accept="image/*,audio/*,application/pdf,video/*" class="chat__file-input" id="fileInput" />
         <label for="fileInput" class="file-input-button">
           <span class="material-symbols-outlined">attach_file</span>
@@ -62,13 +61,27 @@
     <button class="export-button" onclick="exportMessages()">
       <span class="material-symbols-outlined">file_download</span>
     </button>
-       <button id="add-button">
-         <span class="material-symbols-outlined">add</span>
-       </button>
-       <button class="botao-compartilhar" onclick="sharePage()">
-         <span class="material-symbols-outlined">share</span>
-       </button>
+    <button id="add-button">
+      <span class="material-symbols-outlined">add</span>
+    </button>
+    <button class="botao-compartilhar" onclick="sharePage()">
+      <span class="material-symbols-outlined">share</span>
+    </button>
+    <button class="info__btn" onclick="showinfo()">
+      <span class="material-symbols-outlined">info</span>
+    </button>
+      <div class="infocon" id="infocon">
+        <p class="info__paragraph">Caso suas mensagens não estejam sendo enviadas:
+        <br>
+        1. Tente atualizar a página ou o aplicativo.
+        <br>
+        2. Se você acabou de entrar no servidor, aguarde 50 segundos para que o servidor seja iniciado.
+        <br>
+        3. Verifique sua conexão com a internet.
+        </p>
+      </div>
   </div>
+
   <script src="./js/script.js"></script>
 </body>
 
