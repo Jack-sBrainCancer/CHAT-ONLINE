@@ -516,3 +516,8 @@ let deferredPrompt;
             alert('O compartilhamento não é suportado neste navegador. Copie o link: ' + pageUrl);
           }
         }
+        
+        function showinfo() {
+          const ifm = document.getElementById("infocon");
+          ifm.style.display = (ifm.style.display === "block") ? "none" : "block";
+        }
